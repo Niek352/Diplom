@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.jeffcampbellmakesgames.entitasredux": "https://github.com/jeffcampbellmakesgames/entitas-redux.git#releases/stable",
     "com.jeffcampbellmakesgames.genesis": "2.4.7",
     "com.jeffcampbellmakesgames.packagetools": "1.5.1",
     "com.unity.2d.sprite": "1.0.0",

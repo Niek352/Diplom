@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "com.jeffcampbellmakesgames.entitasredux": {
+      "version": "https://github.com/jeffcampbellmakesgames/entitas-redux.git#releases/stable",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.jeffcampbellmakesgames.genesis": "2.4.7"
+      },
+      "hash": "0f30146ea5cc275ae7ea1189c698e7a523cfd320"
+    },
     "com.jeffcampbellmakesgames.genesis": {
       "version": "2.4.7",
       "depth": 0,
