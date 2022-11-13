@@ -18,7 +18,58 @@ public partial class GameEntity
 	public void CopyComponentTo(IComponent component)
 	{
 		#if !ENTITAS_REDUX_NO_IMPL
-
+		if (component is Ecs.Game.Components.Player.PlayerComponent Player)
+		{
+			IsPlayer = true;
+		}
+		else if (component is Ecs.Game.Components.Core.RotationComponent Rotation)
+		{
+			CopyRotationTo(Rotation);
+		}
+		else if (component is Ecs.Game.Components.Core.PositionComponent Position)
+		{
+			CopyPositionTo(Position);
+		}
+		else if (component is Ecs.Game.Components.Core.LinkComponent Link)
+		{
+			CopyLinkTo(Link);
+		}
+		else if (component is Ecs.Game.Components.Core.TransformComponent Transform)
+		{
+			CopyTransformTo(Transform);
+		}
+		else if (component is Ecs.Game.Components.Core.VelocityComponent Velocity)
+		{
+			CopyVelocityTo(Velocity);
+		}
+		else if (component is Ecs.Game.Components.Core.LocalPositionComponent LocalPosition)
+		{
+			CopyLocalPositionTo(LocalPosition);
+		}
+		else if (component is Ecs.Game.Components.Core.LookDirectionComponent LookDirection)
+		{
+			CopyLookDirectionTo(LookDirection);
+		}
+		else if (component is RotationAddedListenerComponent RotationAddedListener)
+		{
+			CopyRotationAddedListenerTo(RotationAddedListener);
+		}
+		else if (component is PositionAddedListenerComponent PositionAddedListener)
+		{
+			CopyPositionAddedListenerTo(PositionAddedListener);
+		}
+		else if (component is LinkRemovedListenerComponent LinkRemovedListener)
+		{
+			CopyLinkRemovedListenerTo(LinkRemovedListener);
+		}
+		else if (component is VelocityAddedListenerComponent VelocityAddedListener)
+		{
+			CopyVelocityAddedListenerTo(VelocityAddedListener);
+		}
+		else if (component is LocalPositionAddedListenerComponent LocalPositionAddedListener)
+		{
+			CopyLocalPositionAddedListenerTo(LocalPositionAddedListener);
+		}
 		#endif
 	}
 

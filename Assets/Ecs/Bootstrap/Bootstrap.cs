@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using JCMG.EntitasRedux;
+using UnityEngine;
 using Zenject;
 
 namespace Ecs.Bootstrap
@@ -22,6 +23,7 @@ namespace Ecs.Bootstrap
 			_feature = feature;
 			for (var i = 0; i < systems.Count; i++)
 			{
+				Debug.Log($"System {systems[i]}" );
 				_feature.Add(systems[i]);
 			}
 		}
@@ -42,6 +44,7 @@ namespace Ecs.Bootstrap
 				return;
 
 			_feature.Update();
+			_feature.Execute();
 		}
 
 		public void FixedTick()

@@ -1,8 +1,11 @@
-﻿using JCMG.EntitasRedux;
+﻿using ClassLibrary1;
+using ClassLibrary1.Enums;
+using JCMG.EntitasRedux;
 using UnityEngine;
 
 namespace Ecs.Action.Systems
 {
+	[Install(ExecutionType.Game, ExecutionPriority.Urgent,5,"Initialize")]
 	public class ReadPlayerInputSystem : IUpdateSystem
 	{
 		private readonly ActionContext _action;

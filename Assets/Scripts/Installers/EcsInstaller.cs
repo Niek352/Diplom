@@ -1,12 +1,13 @@
 ﻿using System;
 using Ecs.Action.Systems;
 using Ecs.Bootstrap;
+using Ecs.Game.Systems;
 using JCMG.EntitasRedux;
 using Zenject;
 
 namespace Installers
 {
-	public class GameEcsInstaller : MonoInstaller
+	public class EcsInstaller : MonoInstaller
 	{
 		private Contexts _contexts;
 
@@ -17,6 +18,9 @@ namespace Installers
 			BindContext<ActionContext>();
 			
 			InstallSystems();
+			
+			BindEventSystem<GameEventSystems>();
+			
 			BindFeature<Feature>();
 			
 			Container.BindInstance(_contexts).WhenInjectedInto<Bootstrap>();
@@ -24,7 +28,13 @@ namespace Installers
 		}
 		private void InstallSystems()
 		{
-			BindSystem<ReadPlayerInputSystem>(Container);
+			GameEcsInstaller.InstallSystems(Container);
+		}
+		
+		protected void BindEventSystem<TEventSystem>()
+			where TEventSystem : Feature
+		{
+			Container.BindInterfacesTo<TEventSystem>().AsSingle().WithArguments(_contexts);
 		}
 		
 		private void BindContext<TContext>()
@@ -37,7 +47,7 @@ namespace Installers
 					return;
 				}
 
-			throw new Exception($"[{nameof(GameEcsInstaller)}] No context with type: {typeof(TContext).Name}");
+			throw new Exception($"[{nameof(EcsInstaller)}] No context with type: {typeof(TContext).Name}");
 		}
 
 		private void BindFeature<TFeature>()
@@ -45,11 +55,6 @@ namespace Installers
 		{
 			var mainFeature = new TFeature();
 			Container.Bind<TFeature>().FromInstance(mainFeature);
-		}
-		
-		private void BindSystem<TSystem>(DiContainer container)
-		{
-			container.BindInterfacesAndSelfTo<TSystem>().AsSingle();
 		}
 	}
 }
