@@ -15,11 +15,10 @@ namespace Ecs.Game.Systems
 	public class BulletRayCastSystem : IUpdateSystem, IDisposable
 	{
 		private static readonly ListPool<GameEntity> EntityListPool = ListPool<GameEntity>.Instance;
-
+		private static readonly ListPool<RaycastCommand> RayCastPoolList = ListPool<RaycastCommand>.Instance;
 		private readonly IBulletData _bulletData;
-		private readonly GameContext _game;
 		private readonly IGroup<GameEntity> _bulletPool;
-		JobHandle _jobHandle;
+		private JobHandle _jobHandle;
 		private NativeArray<RaycastHit> _raycastHit = new NativeArray<RaycastHit>(0, Allocator.Persistent);
 		private NativeArray<RaycastCommand> _raycastCommands = new NativeArray<RaycastCommand>(0, Allocator.Persistent);
 		
@@ -28,17 +27,17 @@ namespace Ecs.Game.Systems
 			GameContext game)
 		{
 			_bulletData = bulletData;
-			_game = game;
-			_bulletPool = _game.GetGroup(GameMatcher.AllOf(GameMatcher.Bullet));
+			_bulletPool = game.GetGroup(GameMatcher.AllOf(GameMatcher.Bullet));
 		}
 		
 		public void Update()
 		{
 			var bullets = EntityListPool.Spawn();
+			var tempArr = RayCastPoolList.Spawn();
+			var intDeletedCount = 0;
 			_bulletPool.GetEntities(bullets);
 			_jobHandle.Complete();
-			var intDeletedCount = 0;
-			var tempArr = new List<RaycastCommand>(_raycastHit.Length);
+			
 			for (var index = 0; index < _raycastHit.Length; index++)
 			{
 				var b = bullets[index];
@@ -63,7 +62,7 @@ namespace Ecs.Game.Systems
 				b.Time.Value += Time.deltaTime;
 				var newPosition = CalculateNewPosition(b);
 				b.ReplacePosition(newPosition);
-				RaycastSegment(lastPosition, newPosition, index, tempArr);
+				RaycastSegment(lastPosition, newPosition, tempArr);
 			}
 			
 			if (_raycastCommands.IsCreated)
@@ -77,6 +76,7 @@ namespace Ecs.Game.Systems
 			
 			_jobHandle = RaycastCommand.ScheduleBatch(_raycastCommands, _raycastHit, 1);
 			EntityListPool.Despawn(bullets);
+			RayCastPoolList.Despawn(tempArr);
 		}
 		
 		private Vector3 CalculateNewPosition(GameEntity bullet)
@@ -85,7 +85,7 @@ namespace Ecs.Game.Systems
 			return bullet.Position.Value + (bullet.Velocity.Value * Time.deltaTime) + (gravity);
 		}
 		
-		private void RaycastSegment(Vector3 start, Vector3 end, int index, List<RaycastCommand> raycastCommands)
+		private void RaycastSegment(Vector3 start, Vector3 end, List<RaycastCommand> raycastCommands)
 		{
 			var direction = end - start;
 			var distance = (end - start).magnitude;
