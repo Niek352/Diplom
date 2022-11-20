@@ -27,6 +27,7 @@ namespace Ecs.Game.Systems
 			var playerEntity = _game.CreateEntity();
 			var player = Object.Instantiate(_playerData.PlayerView);
 			playerEntity.IsPlayer = true;
+			playerEntity.AddPosition(Vector3.zero);
 			player.Link(playerEntity, _game);
 		}
 	}

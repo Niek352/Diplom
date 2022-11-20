@@ -9,11 +9,14 @@ namespace Ecs.Action.Systems
 	public class ReadPlayerInputSystem : IUpdateSystem
 	{
 		private readonly ActionContext _action;
+		private readonly GameContext _game;
 		public ReadPlayerInputSystem(
-			ActionContext action
-			)
+			ActionContext action,
+			GameContext game
+		)
 		{
 			_action = action;
+			_game = game;
 		}
 		
 		public void Update()
@@ -22,6 +25,10 @@ namespace Ecs.Action.Systems
 			if (input.x != 0 || input.y != 0)
 			{
 				_action.ReplacePlayerInput(input);
+			}
+			if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButton(0))
+			{
+				_action.CreateEntity().AddCreateBullet(Vector3.forward * 25, _game.PlayerEntity.Position.Value, 10f);
 			}
 		}
 	}

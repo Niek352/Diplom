@@ -21,7 +21,9 @@ using Zenject;
 		public static void InstallSystems(DiContainer container)
 		{
 			SystemHelperInstaller.BindSystem<GameInitialize>(container);
-			SystemHelperInstaller.BindSystem<PlayerMoveSystem>(container);
-			SystemHelperInstaller.BindSystem<ReadPlayerInputSystem>(container);
+            SystemHelperInstaller.BindSystem<PlayerMoveSystem>(container);
+            SystemHelperInstaller.BindSystem<ReadPlayerInputSystem>(container);
+            SystemHelperInstaller.BindSystem<BulletRayCastSystem>(container);
+            SystemHelperInstaller.BindSystem<CreateBulletSystem>(container);
 		}
 	}
