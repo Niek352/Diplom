@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using ClassLibrary1;
 using ClassLibrary1.Enums;
+using Db.Bullet;
 using JCMG.EntitasRedux;
-using UniRx;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -14,15 +15,19 @@ namespace Ecs.Game.Systems
 	public class BulletRayCastSystem : IUpdateSystem, IDisposable
 	{
 		private static readonly ListPool<GameEntity> EntityListPool = ListPool<GameEntity>.Instance;
-		
+
+		private readonly IBulletData _bulletData;
 		private readonly GameContext _game;
 		private readonly IGroup<GameEntity> _bulletPool;
 		JobHandle _jobHandle;
 		private NativeArray<RaycastHit> _raycastHit = new NativeArray<RaycastHit>(0, Allocator.Persistent);
 		private NativeArray<RaycastCommand> _raycastCommands = new NativeArray<RaycastCommand>(0, Allocator.Persistent);
-
-		public BulletRayCastSystem(GameContext game)
+		
+		public BulletRayCastSystem(
+			IBulletData bulletData,
+			GameContext game)
 		{
+			_bulletData = bulletData;
 			_game = game;
 			_bulletPool = _game.GetGroup(GameMatcher.AllOf(GameMatcher.Bullet));
 		}
@@ -33,6 +38,7 @@ namespace Ecs.Game.Systems
 			_bulletPool.GetEntities(bullets);
 			_jobHandle.Complete();
 			var intDeletedCount = 0;
+			var tempArr = new List<RaycastCommand>(_raycastHit.Length);
 			for (var index = 0; index < _raycastHit.Length; index++)
 			{
 				var b = bullets[index];
@@ -51,6 +57,13 @@ namespace Ecs.Game.Systems
 					b.Position.Value = hit.point;
 					b.Velocity.Value = Vector3.Reflect(b.Velocity.Value, hit.normal);
 				}
+				
+
+				var lastPosition = b.Position.Value;
+				b.Time.Value += Time.deltaTime;
+				var newPosition = CalculateNewPosition(b);
+				b.ReplacePosition(newPosition);
+				RaycastSegment(lastPosition, newPosition, index, tempArr);
 			}
 			
 			if (_raycastCommands.IsCreated)
@@ -59,21 +72,8 @@ namespace Ecs.Game.Systems
 			if (_raycastHit.IsCreated)
 				_raycastHit.Dispose();
 
-			_raycastCommands = new NativeArray<RaycastCommand>(bullets.Count - intDeletedCount, Allocator.TempJob);
+			_raycastCommands = new NativeArray<RaycastCommand>(tempArr.ToArray(), Allocator.TempJob);
 			_raycastHit = new NativeArray<RaycastHit>(bullets.Count - intDeletedCount, Allocator.TempJob);
-			
-			for (var index = 0; index < _raycastHit.Length; index++)
-			{
-				var b = bullets[index];
-				if (!b.HasPosition)
-					continue;
-				var lastPosition = b.Position.Value;
-				b.Time.Value += Time.deltaTime;
-				var newPosition = CalculateNewPosition(b);
-				b.ReplacePosition(newPosition);
-
-				RaycastSegment(lastPosition, newPosition, index, _raycastCommands);
-			}
 			
 			_jobHandle = RaycastCommand.ScheduleBatch(_raycastCommands, _raycastHit, 1);
 			EntityListPool.Despawn(bullets);
@@ -81,15 +81,15 @@ namespace Ecs.Game.Systems
 		
 		private Vector3 CalculateNewPosition(GameEntity bullet)
 		{
-			Vector3 gravity = Physics.gravity * Time.deltaTime * 0f;
+			Vector3 gravity = Physics.gravity * Time.deltaTime * _bulletData.GravityModifier;
 			return bullet.Position.Value + (bullet.Velocity.Value * Time.deltaTime) + (gravity);
 		}
 		
-		private void RaycastSegment(Vector3 start, Vector3 end, int index, NativeArray<RaycastCommand> raycastCommands)
+		private void RaycastSegment(Vector3 start, Vector3 end, int index, List<RaycastCommand> raycastCommands)
 		{
 			var direction = end - start;
 			var distance = (end - start).magnitude;
-			raycastCommands[index] = new RaycastCommand(start, direction, distance);
+			raycastCommands.Add(new RaycastCommand(start, direction, distance, _bulletData.BulletCollidedMask));
 		}
 		
 		public void Dispose()

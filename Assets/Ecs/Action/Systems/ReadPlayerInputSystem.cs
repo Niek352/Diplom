@@ -1,5 +1,6 @@
 ﻿using ClassLibrary1;
 using ClassLibrary1.Enums;
+using Db.Bullet;
 using JCMG.EntitasRedux;
 using UnityEngine;
 
@@ -10,13 +11,16 @@ namespace Ecs.Action.Systems
 	{
 		private readonly ActionContext _action;
 		private readonly GameContext _game;
+		private readonly IBulletData _bulletData;
 		public ReadPlayerInputSystem(
 			ActionContext action,
-			GameContext game
+			GameContext game,
+			IBulletData bulletData
 		)
 		{
 			_action = action;
 			_game = game;
+			_bulletData = bulletData;
 		}
 		
 		public void Update()
@@ -28,7 +32,7 @@ namespace Ecs.Action.Systems
 			}
 			if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButton(0))
 			{
-				_action.CreateEntity().AddCreateBullet(Vector3.forward * 25, _game.PlayerEntity.Position.Value, 10f);
+				_action.CreateEntity().AddCreateBullet(Vector3.forward * _bulletData.BulletSpeed, _game.PlayerEntity.Position.Value, 10f);
 			}
 		}
 	}
