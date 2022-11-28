@@ -30,7 +30,7 @@ namespace Ecs.Action.Systems
 			{
 				_action.ReplacePlayerInput(input);
 			}
-			if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButton(0))
+			if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
 			{
 				_action.CreateEntity().AddCreateBullet(Vector3.forward * _bulletData.BulletSpeed, _game.PlayerEntity.Position.Value, 10f);
 			}
